@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from django.contrib.auth.models import User
-from .serializers import SignUpSerializer, UserSerializer, PostsSerializer
-from .models import AppUsers, Posts
+from .serializers import SignUpSerializer, UserSerializer, ActivitySerializer, ProjectSerializer, ActivityImagesSerializer, WorkSerializer
+from .models import AppUsers, Posts, Projects, Work
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.tokens import UntypedToken
+
 
 class SignUp(APIView):
 
@@ -38,7 +39,7 @@ class SignUp(APIView):
             }
 
             modelSerializer = UserSerializer(data = userData)
-           
+
             if modelSerializer.is_valid():
 
                 modelSerializer.save()
@@ -108,7 +109,7 @@ def login(request):
 def guestUser(request):
 
     posts = Posts.objects.all()
-    serializer = PostsSerializer(posts, many=True)
+    serializer = ActivitySerializer(posts, many=True)
 
     return Response({
         'data' : serializer.data,
@@ -118,15 +119,143 @@ def guestUser(request):
 
 def getPosts(request):
 
-    # data = {'token': request.data}
-    # valid_data = UntypedToken(request.data)
-
-    # print(valid_data)
-
     posts = Posts.objects.all()
-    serializer = PostsSerializer(posts, many=True)
+    serializer = ActivitySerializer(posts, many=True)
 
     return Response({
         'data' : serializer.data,
         'status' : status.HTTP_201_CREATED
     })
+
+
+def checkUserName(request):
+
+    username = request.query_params.get('username')
+
+    if AppUsers.objects.filter(username=username).exists() is True:
+        return Response({
+            'data' : True,
+            'status' : status.HTTP_201_CREATED
+        })
+    else:
+        return Response({
+            'data' : False,
+            'status' : status.HTTP_201_CREATED
+        })
+    
+
+def createProject(request):
+    
+    serializer = ProjectSerializer(data=request.data)
+
+    name = request.data['name']
+
+    if Projects.objects.filter(name=name).exists() is True:
+        return Response({
+            'data' : {},
+            'status' : status.HTTP_201_CREATED,
+            'message' : 'Project Exists'
+        })
+    else:
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'status' : status.HTTP_201_CREATED,
+                'data' : serializer.data,
+                'message' : 'New Project Created'
+            })
+        else:
+            return Response({
+                'status' : status.HTTP_400_BAD_REQUEST,
+                'data' : serializer.data,
+                'message' : 'Project not created'
+            })
+        
+
+def getProjects(request):
+    
+    projects = Projects.objects.all()
+    serializer = ProjectSerializer(projects, many=True)
+
+    return Response({
+        'data' : serializer.data,
+        'status' : status.HTTP_201_CREATED
+    })
+
+
+def uploadImage(request):
+
+    serializer = ActivityImagesSerializer(data=request.data)
+
+    if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'status' : True,
+                'data' : serializer.data,
+                'message' : 'Image Uploaded'
+            })
+    else:
+        return Response({
+            'status' : False,
+            'data' : serializer.data,
+            'message' : 'Image not Uploaded'
+        })
+
+
+def addActivity(request):
+    
+    serializer = ActivitySerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'status' : status.HTTP_201_CREATED,
+            'data' : serializer.data,
+            'message' : 'New Project Created'
+        })
+    else:
+        return Response({
+            'status' : status.HTTP_400_BAD_REQUEST,
+            'data' : serializer.data,
+            'message' : 'Project not created'
+        })
+    
+
+def startWork(request):
+    
+    serializer = WorkSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'status' : status.HTTP_201_CREATED,
+            'data' : serializer.data,
+            'message' : 'Work Started'
+        })
+    else:
+        return Response({
+            'status' : status.HTTP_400_BAD_REQUEST,
+            'data' : serializer.data,
+            'message' : 'Work not Started'
+        })
+    
+def endWork(request, pk):
+
+    data = request.data
+    outlet = Work.objects.get(id=pk)
+    serializer = WorkSerializer(instance=outlet, data=data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'status' : True,
+            'data' : serializer.data,
+            'message' : 'Work updated'
+        })
+    else:
+        print(serializer.errors)
+        return Response({
+            'status' : False,
+            'data' : serializer.data,
+            'message' : 'Work not updated'
+        })

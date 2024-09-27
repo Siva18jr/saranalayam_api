@@ -22,8 +22,29 @@ class UserSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class PostsSerializer(ModelSerializer):
+class ActivitySerializer(ModelSerializer):
 
     class Meta:
         model = Posts
+        fields = '__all__'
+
+
+class ProjectSerializer(ModelSerializer):
+
+    class Meta:
+        model = Projects
+        fields = '__all__'
+
+
+class ActivityImagesSerializer(ModelSerializer):
+
+    class Meta:
+        model = ActivityImages
+        fields = '__all__'
+
+
+class WorkSerializer(ModelSerializer):
+
+    class Meta:
+        model = Work
         fields = '__all__'
