@@ -242,8 +242,8 @@ def startWork(request):
 def endWork(request, pk):
 
     data = request.data
-    outlet = Work.objects.get(id=pk)
-    serializer = WorkSerializer(instance=outlet, data=data)
+    work = Work.objects.get(id=pk)
+    serializer = WorkSerializer(instance=work, data=data)
 
     if serializer.is_valid():
         serializer.save()
@@ -259,3 +259,36 @@ def endWork(request, pk):
             'data' : serializer.data,
             'message' : 'Work not updated'
         })
+    
+
+def updateUser(request, pk):
+
+    data = request.data
+    users = AppUsers.objects.get(id=pk)
+    serializer = UserSerializer(instance=users, data=data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'status' : True,
+            'data' : serializer.data,
+            'message' : 'User details updated'
+        })
+    else:
+        print(serializer.errors)
+        return Response({
+            'status' : False,
+            'data' : serializer.data,
+            'message' : 'User details not updated'
+        })
+    
+
+def getUsersList(request):
+
+    users = AppUsers.objects.all()
+    serializer = UserSerializer(users, many=True)
+
+    return Response({
+        'data' : serializer.data,
+        'status' : status.HTTP_201_CREATED
+    })

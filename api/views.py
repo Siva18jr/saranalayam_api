@@ -1,6 +1,7 @@
 from rest_framework.decorators import api_view
 from .utils import *
 from rest_framework import generics
+from django.views.decorators.csrf import csrf_exempt
 
 
 @api_view(['GET'])
@@ -62,7 +63,22 @@ def work(request):
         return startWork(request)
     
 
+@api_view(['PUT'])
 def updateWork(request, pk):
 
     if request.method == 'PUT':
         return endWork(request, pk)
+    
+
+@api_view(['PUT'])
+def users(request, pk):
+
+    if request.method == 'PUT':
+        return updateUser(request, pk)
+    
+
+@api_view(['GET'])
+def getUsers(request):
+    
+    if request.method == 'GET':
+        return getUsersList(request)

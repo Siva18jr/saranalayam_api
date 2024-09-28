@@ -7,6 +7,7 @@ class AppUsers(models.Model):
     password = models.CharField(max_length=50, null=False, blank=False)
     token = models.CharField(max_length=255, null=False, blank=False)
     type = models.CharField(max_length=50, null=False, blank=False)
+    active = models.BooleanField(default=True, null=False)
     updated = models.DateTimeField(auto_now=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=True)
 
