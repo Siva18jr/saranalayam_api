@@ -48,3 +48,24 @@ class WorkSerializer(ModelSerializer):
     class Meta:
         model = Work
         fields = '__all__'
+
+
+class AmountSerializer(ModelSerializer):
+
+    class Meta:
+        model = Amount
+        fields = '__all__'
+
+
+class FoodSerializer(ModelSerializer):
+
+    class Meta:
+        model = Food
+        fields = '__all__'
+
+
+class DonationSerializer(ModelSerializer):
+
+    class Meta:
+        model = Donation
+        fields = '__all__'
