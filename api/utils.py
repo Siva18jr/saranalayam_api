@@ -484,8 +484,8 @@ def getFoodData(request):
     serializer = FoodSerializer(food, many=True)
 
     return Response({
-        'data' : serializer.data,
         'status' : True,
+        'data' : serializer.data,
         'message' : 'Food details retrieved'
     })
 
@@ -594,14 +594,24 @@ def getAttendance(request):
             'message' : 'Attendance list retrived'
         })
     elif type == 'user':
+      
         user = request.query_params.get('username')
+      
         work = Work.objects.filter(username=user)
         serializer = WorkSerializer(instance = work, many= True)
+      
+        user = AppUsers.objects.get(username=user)
+        userSerializer = UserSerializer(instance = user, many= False)
+      
         return Response({
             'status' : True,
-            'data' : serializer.data,
+            'data' : {
+                'user_data' : userSerializer.data,
+                'work_data' : serializer.data,
+            },
             'message' : 'Attendance list retrieved'
         })
+    
     else:
         return Response({
             'status' : False,
@@ -619,25 +629,30 @@ def getProjectInfo(request):
     amountSerializer = AmountSerializer(amount, many=True)
 
     totalSents = 0
+    projectSents = {}
+    projectImages = {}
+
+    D3 = {}
 
     for data in amountSerializer.data:
         totalSents += int(0 if data['spentAmount'] == '' else data['spentAmount'])
+        projectSents[data['projectName']] = int(0 if data['spentAmount'] == '' else data['spentAmount'] 
+        if data['projectName'] not in projectSents else projectSents[data['projectName']] + int(0 if data['spentAmount'] == '' else data['spentAmount']))
+
+    for data in serializer.data:
+        projectImages[data['name']] = data['image']
+
+    projectDetails = [{'name': key, 'sents' :projectSents[key],  'image' : projectImages[key]} for key in projectSents.keys()]
 
     return Response({
         'status' : False,
         'data' : { 
             'project_count' : len(serializer.data),
             'total_sent' : totalSents,
-            'project_details' : amountSerializer.data
-        }
+            'project_details' : projectDetails
+        },
+        'message' : 'Project Details Retrieved'
     })
-
-
-def filterProjectData(request):
-    today = datetime.date.today()
-    first = today.replace(day=1)
-    last_month = first - datetime.timedelta(days=1)
-    print(last_month.strftime("%Y%m"))
 
 
 def getProjectIncharge(request):
@@ -730,11 +745,11 @@ def getDonationGraph(request):
             dct[key] += 1
 
         return Response({
+            'status' : True,
             'data' : {
                 'list' : serializer.data,
                 'graph_data' : dict(dct)
             },
-            'status' : True,
             'message' : 'Last Six Months data retrived'
         })
     
@@ -753,11 +768,11 @@ def getDonationGraph(request):
             dct[key] += 1
 
         return Response({
+            'status' : True,
             'data' : {
                 'list' : serializer.data,
                 'graph_data' : dict(dct)
             },
-            'status' : True,
             'message' : 'Last 1 year data retrived'
         })
     
@@ -776,11 +791,11 @@ def getDonationGraph(request):
             dct[key] += 1
 
         return Response({
+            'status' : True,
             'data' : {
                 'list' : serializer.data,
                 'graph_data' : dict(dct)
             },
-            'status' : True,
             'message' : 'Last 5 years data retrived'
         })
     
@@ -790,11 +805,11 @@ def getDonationGraph(request):
         dct = defaultdict(int)
 
         return Response({
+            'status' : True,
             'data' : {
                 'list' : [],
                 'graph_data' : {}
             },
-            'status' : True,
             'message' : 'No data found'
         })
     
@@ -834,7 +849,7 @@ def getProjectGraph(request):
     today = timezone.now().date()
     projects = Projects.objects.all()
 
-    if duration == 'days':
+    if duration == 'Last Month':
 
         oneMonthAgo = today - timedelta(days=30)
         
@@ -864,17 +879,19 @@ def getProjectGraph(request):
             pct = v * 100.0 / s
             graphData[k] = pct
 
+        projectGraph = [{'name': key, 'percentage' : graphData[key]} for key in graphData.keys()]
+
         return Response({
+            'status' : True,
             'data' : {
                 'total_sents' : totalSents,
-                'list' : serializer.data,
-                'graph_data' : graphData
+                'data_list' : serializer.data,
+                'graph_data' : projectGraph
             },
-            'status' : True,
             'message' : 'Last Month data retrived'
         })
     
-    elif duration == 'months':
+    elif duration == '6 Months':
 
         sixMonthsAgo = today - timedelta(days=6*30)
         
@@ -904,17 +921,19 @@ def getProjectGraph(request):
             pct = v * 100.0 / s
             graphData[k] = pct
 
+        projectGraph = [{'name': key, 'percentage' : graphData[key]} for key in graphData.keys()]
+
         return Response({
+            'status' : True,
             'data' : {
                 'total_sents' : totalSents,
-                'list' : serializer.data,
-                'graph_data' : graphData
+                'data_list' : serializer.data,
+                'graph_data' : projectGraph
             },
-            'status' : True,
             'message' : 'Last Six months data retrived'
         })
     
-    elif duration == 'all':
+    elif duration == 'All':
         
         amount = Amount.objects.all()
         projects = Projects.objects.all()
@@ -942,23 +961,25 @@ def getProjectGraph(request):
             pct = v * 100.0 / s
             graphData[k] = pct
 
+        projectGraph = [{'name': key, 'percentage' : graphData[key]} for key in graphData.keys()]
+
         return Response({
+            'status' : True,
             'data' : {
                 'total_sents' : totalSents,
-                'list' : serializer.data,
-                'graph_data' : graphData
+                'data_list' : serializer.data,
+                'graph_data' : projectGraph
             },
-            'status' : True,
             'message' : 'All Data retrived'
         })
     
     else:
         return Response({
+            'status' : True,
             'data' : {
                 'total_sents' : 0,
-                'list' : [],
+                'data_list' : [],
                 'graph_data' : {}
             },
-            'status' : True,
             'message' : 'Data retrived'
         })
