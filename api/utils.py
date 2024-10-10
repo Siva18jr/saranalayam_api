@@ -490,6 +490,26 @@ def getFoodData(request):
     })
 
 
+def updateFood(request, pk):
+
+    activity = Food.objects.get(id=pk)
+    serializer = FoodSerializer(instance=activity, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'status' : True,
+            'data' : serializer.data,
+            'message' : 'Food details updated'
+        })
+    else:
+        return Response({
+            'status' : False,
+            'data' : serializer.data,
+            'message' : 'Food details not updated'
+        })
+    
+
 def addDonation(request):
     
     serializer = DonationSerializer(data=request.data)

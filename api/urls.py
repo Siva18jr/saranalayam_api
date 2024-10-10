@@ -29,5 +29,6 @@ urlpatterns = [
     path('auth/users/type', views.getUsersByType, name="getusersbytype"),
     path('donation/graph', views.getDonationsGraph, name="getdonationsgraph"),
     path('food/filter', views.getFoodByDate, name="filterfood"),
-    path('projects/filter', views.getProjectsGraph, name="filterfood"),
+    path('projects/filter', views.getProjectsGraph, name="projectgraph"),
+    path('food/<int:pk>/', views.food, name="updatefood")
 ]

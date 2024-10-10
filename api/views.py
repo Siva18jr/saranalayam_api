@@ -196,3 +196,10 @@ def getProjectsGraph(request):
     
     if request.method == 'GET':
         return getProjectGraph(request)
+    
+
+@api_view(['PUT'])
+def food(request, pk):
+
+    if request.method == 'PUT':
+        return updateFood(request, pk)
