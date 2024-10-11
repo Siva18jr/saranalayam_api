@@ -764,11 +764,15 @@ def getDonationGraph(request):
         for key in labels:
             dct[key] += 1
 
+        d = dict(dct)
+
+        donationGraph = [{'name': key, 'count' : d[key]} for key in d.keys()]
+
         return Response({
             'status' : True,
             'data' : {
                 'list' : serializer.data,
-                'graph_data' : dict(dct)
+                'graph_data' : donationGraph
             },
             'message' : 'Last Six Months data retrived'
         })
@@ -787,11 +791,15 @@ def getDonationGraph(request):
         for key in labels:
             dct[key] += 1
 
+        d = dict(dct)
+
+        donationGraph = [{'name': key, 'count' : d[key]} for key in d.keys()]
+
         return Response({
             'status' : True,
             'data' : {
                 'list' : serializer.data,
-                'graph_data' : dict(dct)
+                'graph_data' : donationGraph
             },
             'message' : 'Last 1 year data retrived'
         })
@@ -810,11 +818,15 @@ def getDonationGraph(request):
         for key in labels:
             dct[key] += 1
 
+        d = dict(dct)
+
+        donationGraph = [{'name': key, 'count' : d[key]} for key in d.keys()]
+
         return Response({
             'status' : True,
             'data' : {
                 'list' : serializer.data,
-                'graph_data' : dict(dct)
+                'graph_data' : donationGraph
             },
             'message' : 'Last 5 years data retrived'
         })
@@ -828,7 +840,7 @@ def getDonationGraph(request):
             'status' : True,
             'data' : {
                 'list' : [],
-                'graph_data' : {}
+                'graph_data' : []
             },
             'message' : 'No data found'
         })
