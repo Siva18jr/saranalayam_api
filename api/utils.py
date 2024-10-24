@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -10,6 +11,11 @@ from rest_framework_simplejwt.tokens import UntypedToken
 from datetime import datetime, timedelta
 from django.utils import timezone
 from collections import defaultdict
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 
 
 class SignUp(APIView):
@@ -1015,3 +1021,84 @@ def getProjectGraph(request):
             },
             'message' : 'Data retrived'
         })
+    
+
+def generate_pdf(data, totals):
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="amounts.pdf"'
+    
+    buffer = SimpleDocTemplate(response, pagesize=letter)
+   
+    elements = []
+    elements.append(Table([["PROJECT TITLE:", "Open Shelter"]], colWidths=[200, 200]))
+    elements.append(
+        Table([[
+        "Total Amount", f"{totals['received']:.2f}",
+        "Spent Amount", f"{totals['spent']:.2f}",
+        "Balance Amount", f"{totals['remaining']:.2f}",
+        "Reimbursement Amount", f"{totals['reimbursement']:.2f}"
+        ]])
+    )
+
+    headers = ['Date', 'Reason', 'Spending Amount']
+    data_rows = [[amt.created.strftime('%d-%m-%Y'), amt.reason, f"{float(amt.spentAmount or 0.0):.2f}"] for amt in data]
+    table_data = [headers] + data_rows
+    table = Table(table_data)
+
+    style = TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ])
+    
+    table.setStyle(style)
+    elements.append(table)
+    buffer.build(elements)
+    
+    return response
+
+
+def generate_excel(data, totals):
+
+    workbook = Workbook()
+    sheet = workbook.active
+
+    sheet['B1'] = 'PROJECT TITLE:'
+    sheet['D1'] = 'Open Shelter'
+    sheet.merge_cells('B1:C1')
+    sheet.merge_cells('D1:E1')
+
+    sheet['B3'] = 'Total Amount'
+    sheet['C3'] = f"₹{totals['received']:.2f}"
+    sheet['D3'] = 'Spent Amount'
+    sheet['E3'] = f"₹{totals['spent']:.2f}"
+    sheet['F3'] = 'Balance Amount'
+    sheet['G3'] = f"₹{totals['remaining']:.2f}"
+    sheet['H3'] = 'Reimbursement Amount'
+    sheet['I3'] = f"₹{totals['reimbursement']:.2f}"
+
+    headers = ['Date', 'Reason', 'Spending Amount']
+    sheet.append(headers)
+
+    for amt in data:
+
+        row = [
+            amt.created.strftime('%d-%m-%Y'),
+            amt.reason,
+            f"₹{float(amt.spentAmount or 0.0):.2f}"
+        ]
+        sheet.append(row)
+
+    for column in sheet.columns:
+
+        max_length = max(len(str(cell.value)) for cell in column if cell.value) + 2
+        sheet.column_dimensions[get_column_letter(column[0].column)].width = max_length
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=amounts.xlsx'
+    workbook.save(response)
+
+    return response

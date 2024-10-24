@@ -30,5 +30,7 @@ urlpatterns = [
     path('donation/graph', views.getDonationsGraph, name="getdonationsgraph"),
     path('food/filter', views.getFoodByDate, name="filterfood"),
     path('projects/filter', views.getProjectsGraph, name="projectgraph"),
-    path('food/<int:pk>/', views.food, name="updatefood")
+    path('food/<int:pk>/', views.food, name="updatefood"),
+    path('amount/entries/download/pdf/<str:time_period>/', views.downloadAmountData, {'format_type': 'pdf'}, name='download_pdf'),
+    path('amount/entries/download/excel/<str:time_period>/', views.downloadAmountData, {'format_type': 'excel'}, name='download_excel')
 ]

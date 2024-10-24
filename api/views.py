@@ -56,7 +56,7 @@ def images(request):
         return uploadImage(request)
     
 
-@api_view(['POST', 'GET'])
+@api_view(['POST'])
 def work(request):
     
     if request.method == 'POST':
@@ -203,3 +203,40 @@ def food(request, pk):
 
     if request.method == 'PUT':
         return updateFood(request, pk)
+    
+
+def downloadAmountData(request, time_period, format_type):
+   
+    if time_period not in ['last_week', 'last_month', 'last_six_months','all']:
+        return HttpResponse("Invalid time period", status=400)
+
+    now = datetime.now()
+
+    if time_period == 'last_week':
+        start_date = now - timedelta(weeks=1)
+    elif time_period == 'last_month':
+        start_date = now - timedelta(days=30)
+    elif time_period == 'last_six_months':
+        start_date = now - timedelta(days=180) 
+    else: 
+        start_date = datetime.min  
+    
+    if time_period == 'all':
+        data = Amount.objects.all()
+    else:
+        data = Amount.objects.filter(created__gte=start_date)
+    
+    totals = {
+        'received': sum(float(amt.receivedAmount or 0.0) for amt in data),
+        'spent': sum(float(amt.spentAmount or 0.0) for amt in data),
+        'reimbursement': sum(float(amt.reimbursementamt or 0.0) for amt in data),
+    }
+   
+    totals['remaining'] = totals['received'] - totals['spent']
+    
+    if format_type == 'pdf':
+        return generate_pdf(data, totals)
+    elif format_type == 'excel':
+        return generate_excel(data, totals)
+    else:
+        return HttpResponse("Invalid format type", status=400)
