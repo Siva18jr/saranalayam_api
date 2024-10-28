@@ -2,6 +2,6 @@ djangorestframework-simplejwt
 djangorestframework
 pymysql
 reportlab
-django==4.2
+django==4.2.16
 pillow
 openpyxl
