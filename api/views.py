@@ -171,10 +171,10 @@ def getProjectAmountEntry(request):
     
 
 @api_view(['GET'])
-def getUsersByType(request):
+def getUsersByProject(request):
     
     if request.method == 'GET':
-        return getUsersListByType(request)  
+        return getUsersListByProject(request)  
     
 
 @api_view(['GET'])

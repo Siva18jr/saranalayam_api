@@ -8,6 +8,7 @@ class AppUsers(models.Model):
     token = models.CharField(max_length=255, null=False, blank=False)
     type = models.CharField(max_length=50, null=False, blank=False)
     active = models.BooleanField(default=True, null=False)
+    created_by = models.CharField(max_length=30, null=True)
     updated = models.DateTimeField(auto_now=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=True)
 

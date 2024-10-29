@@ -44,7 +44,8 @@ class SignUp(APIView):
                 'number' : request.data['number'],
                 'password' : request.data['password'],
                 'token' : str(token),
-                'type' : request.data['type']
+                'type' : request.data['type'],
+                'created_by' : request.data['created_by']
             }
 
             modelSerializer = UserSerializer(data = userData)
@@ -728,14 +729,14 @@ def getProjectAmountEntries(request):
     })
 
 
-def getUsersListByType(request):
+def getUsersListByProject(request):
 
-    type = request.query_params.get('type')
+    createdBy = request.query_params.get('created_user')
 
-    users = AppUsers.objects.filter(type=type)
+    users = AppUsers.objects.filter(created_by=createdBy)
     serializer = UserSerializer(users, many=True)
 
-    activeUsers = AppUsers.objects.filter(type=type, active = 1).count()
+    activeUsers = AppUsers.objects.filter(created_by=createdBy, active = 1).count()
 
     return Response({
         'data' : {
