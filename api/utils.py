@@ -16,6 +16,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from django.db.models import Sum
 
 
 class SignUp(APIView):
@@ -909,16 +910,19 @@ def getProjectGraph(request):
         for key in labels:
             dct[key] += 1
 
-        d = dict(dct)
+        total_value = Amount.objects.aggregate(total=Sum('spentAmount'))['total']
+        categories = Amount.objects.values('projectName').annotate(total_spent=Sum('spentAmount'))
 
-        graphData = dict()
+        projectGraph = []
 
-        s = sum(d.values())
-        for k, v in d.items():
-            pct = v * 100.0 / s
-            graphData[k] = pct
+        for category in categories:
 
-        projectGraph = [{'name': key, 'percentage' : graphData[key]} for key in graphData.keys()]
+            percentage = (category['total_spent'] / total_value) * 100 if total_value else 0
+
+            projectGraph.append({
+                'name': category['projectName'],
+                'percentage': round(percentage, 2)
+            })
 
         return Response({
             'status' : True,
@@ -951,16 +955,19 @@ def getProjectGraph(request):
         for key in labels:
             dct[key] += 1
 
-        d = dict(dct)
+        total_value = Amount.objects.aggregate(total=Sum('spentAmount'))['total']
+        categories = Amount.objects.values('projectName').annotate(total_spent=Sum('spentAmount'))
 
-        graphData = dict()
+        projectGraph = []
 
-        s = sum(d.values())
-        for k, v in d.items():
-            pct = v * 100.0 / s
-            graphData[k] = pct
+        for category in categories:
 
-        projectGraph = [{'name': key, 'percentage' : graphData[key]} for key in graphData.keys()]
+            percentage = (category['total_spent'] / total_value) * 100 if total_value else 0
+
+            projectGraph.append({
+                'name': category['projectName'],
+                'percentage': round(percentage, 2)
+            })
 
         return Response({
             'status' : True,
@@ -991,16 +998,19 @@ def getProjectGraph(request):
         for key in labels:
             dct[key] += 1
 
-        d = dict(dct)
+        total_value = Amount.objects.aggregate(total=Sum('spentAmount'))['total']
+        categories = Amount.objects.values('projectName').annotate(total_spent=Sum('spentAmount'))
 
-        graphData = dict()
+        projectGraph = []
 
-        s = sum(d.values())
-        for k, v in d.items():
-            pct = v * 100.0 / s
-            graphData[k] = pct
+        for category in categories:
 
-        projectGraph = [{'name': key, 'percentage' : graphData[key]} for key in graphData.keys()]
+            percentage = (category['total_spent'] / total_value) * 100 if total_value else 0
+
+            projectGraph.append({
+                'name': category['projectName'],
+                'percentage': round(percentage, 2)
+            })
 
         return Response({
             'status' : True,
