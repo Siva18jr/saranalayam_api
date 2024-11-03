@@ -463,8 +463,9 @@ def addFood(request):
     serializer = FoodSerializer(data=request.data)
 
     scheduled = request.data['scheduled']
+    date = request.data['date']
 
-    if Food.objects.filter(scheduled=scheduled).exists() is True:
+    if Food.objects.filter(scheduled=scheduled, date=date).exists() is True:
         return Response({
             'data' : {},
             'status' : False,
