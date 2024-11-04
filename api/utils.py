@@ -184,7 +184,6 @@ def createProject(request):
                 'message' : 'New Project Created'
             })
         else:
-            print(serializer.errors)
             return Response({
                 'status' : False,
                 'data' : serializer.data,
@@ -323,7 +322,6 @@ def endWork(request, pk):
             'message' : 'Work updated'
         })
     else:
-        print(serializer.errors)
         return Response({
             'status' : False,
             'data' : serializer.data,
@@ -345,7 +343,6 @@ def updateUser(request, pk):
             'message' : 'User details updated'
         })
     else:
-        print(serializer.errors)
         return Response({
             'status' : False,
             'data' : serializer.data,
@@ -429,7 +426,6 @@ def updateAmountEntry(request, pk):
             'message' : 'Amount Entry details updated'
         })
     else:
-        print(serializer.errors)
         return Response({
             'status' : False,
             'data' : serializer.data,
@@ -531,7 +527,6 @@ def addDonation(request):
             'message' : 'New Item Donated'
         })
     else:
-        print(serializer.errors)
         return Response({
             'status' : False,
             'data' : serializer.data,
@@ -1114,3 +1109,37 @@ def generate_excel(data, totals):
     workbook.save(response)
 
     return response
+
+
+def getProjectByProjectName(request):
+
+    name = request.query_params.get('name')
+
+    project = Projects.objects.get(name=name)
+    serializer = ProjectSerializer(project, many=False)
+
+    return Response({
+        'data' : serializer.data,
+        'status' : True,
+        'message' : 'Fetched Project'
+    })
+
+
+def updateProject(request, pk):
+
+    project = Projects.objects.get(id=pk)
+    serializer = ProjectSerializer(instance=project, data=request.data)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            'status' : True,
+            'data' : serializer.data,
+            'message' : 'Projects details updated'
+        })
+    else:
+        return Response({
+            'status' : False,
+            'data' : serializer.data,
+            'message' : 'Projects details not updated'
+        })

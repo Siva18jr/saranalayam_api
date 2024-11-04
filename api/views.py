@@ -240,3 +240,17 @@ def downloadAmountData(request, time_period, format_type):
         return generate_excel(data, totals)
     else:
         return HttpResponse("Invalid format type", status=400)
+    
+
+@api_view(['GET'])
+def getProjectByName(request):
+    
+    if request.method == 'GET':
+        return getProjectByProjectName(request)
+    
+
+@api_view(['PUT'])
+def project(request, pk):
+
+    if request.method == 'PUT':
+        return updateProject(request, pk)
