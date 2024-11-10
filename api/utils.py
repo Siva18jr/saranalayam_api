@@ -331,9 +331,8 @@ def endWork(request, pk):
 
 def updateUser(request, pk):
 
-    data = request.data
     users = AppUsers.objects.get(id=pk)
-    serializer = UserSerializer(instance=users, data=data)
+    serializer = UserSerializer(instance=users, data=request.data)
 
     if serializer.is_valid():
         serializer.save()
@@ -1131,12 +1130,38 @@ def updateProject(request, pk):
     serializer = ProjectSerializer(instance=project, data=request.data)
 
     if serializer.is_valid():
+
         serializer.save()
-        return Response({
-            'status' : True,
-            'data' : serializer.data,
-            'message' : 'Projects details updated'
-        })
+
+        users = AppUsers.objects.get(username=request.data['coordinatorName'])
+        userserializer = UserSerializer(users, many=False)
+
+        data = {
+            'username': userserializer.data['username'], 
+            'number': userserializer.data['number'],
+            'password': request.data['password'], 
+            'token': userserializer.data['token'], 
+            'type': userserializer.data['type'], 
+            'active': userserializer.data['active'], 
+            'created_by': userserializer.data['created_by'],
+        }
+
+        updateSerializer = UserSerializer(instance=users, data=data)
+
+        if updateSerializer.is_valid():
+            updateSerializer.save()
+            return Response({
+                'status' : True,
+                'data' : updateSerializer.data,
+                'message' : 'Projects details updated'
+            })
+        else:
+            return Response({
+                'status' : False,
+                'data' : userserializer.data,
+                'message' : 'Projects details not updated'
+            })
+        
     else:
         return Response({
             'status' : False,
