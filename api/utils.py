@@ -454,32 +454,67 @@ def updateActivity(request, pk):
     
 
 def addFood(request):
-    
-    serializer = FoodSerializer(data=request.data)
 
     scheduled = request.data['scheduled']
     date = request.data['date']
 
-    if Food.objects.filter(scheduled=scheduled, date=date).exists() is True:
-        return Response({
-            'data' : {},
-            'status' : False,
-            'message' : f'{scheduled} already booked'
-        })
-    else:
-        if serializer.is_valid():
-            serializer.save()
+    if scheduled.lower() == 'all':
+        if Food.objects.filter(date=date).exists() is True:
+            return Response({
+                'data' : {},
+                'status' : False,
+                'message' : f'{date} already booked'
+            })
+        else:
+
+            types = ['Morning', 'Afternoon', 'Night']
+
+            for i in types:
+
+                data = {
+                    'name' : request.data['name'],
+                    'sponserName' : request.data['sponserName'],
+                    'mobile' : request.data['mobile'],
+                    'preparation' : request.data['preparation'],
+                    'amount' : request.data['amount'],
+                    'status' : request.data['status'],
+                    'scheduled' : i,
+                    'date' : request.data['date']
+                }
+
+                serializer = FoodSerializer(data=data)
+
+                if serializer.is_valid():
+                    serializer.save()
+
             return Response({
                 'status' : True,
                 'data' : serializer.data,
                 'message' : 'Food booked to provide'
             })
-        else:
+            
+    else:
+        if Food.objects.filter(scheduled=scheduled, date=date).exists() is True:
             return Response({
+                'data' : {},
                 'status' : False,
-                'data' : serializer.data,
-                'message' : 'Food not booked to provide'
+                'message' : f'{scheduled} already booked'
             })
+        else:
+            serializer = FoodSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'status' : True,
+                    'data' : serializer.data,
+                    'message' : 'Food booked to provide'
+                })
+            else:
+                return Response({
+                    'status' : False,
+                    'data' : serializer.data,
+                    'message' : 'Food not booked to provide'
+                })
         
 
 def getFoodData(request):
