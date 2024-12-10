@@ -96,6 +96,7 @@ class Amount(models.Model):
     
 
 class Food(models.Model):
+    incharge = models.CharField(max_length=50, null=True)
     name = models.CharField(max_length=50, null=False, blank=False)
     sponserName = models.CharField(max_length=50, null=False, blank=False)
     mobile = models.CharField(max_length=70, null=False, blank=False)

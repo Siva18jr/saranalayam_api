@@ -457,6 +457,7 @@ def addFood(request):
 
     scheduled = request.data['scheduled']
     date = request.data['date']
+    incharge = request.data['incharge']
 
     if scheduled.lower() == 'all':
         if Food.objects.filter(date=date).exists() is True:
@@ -479,7 +480,8 @@ def addFood(request):
                     'amount' : request.data['amount'],
                     'status' : request.data['status'],
                     'scheduled' : i,
-                    'date' : request.data['date']
+                    'date' : request.data['date'],
+                    'incharge' : request.data['incharge']
                 }
 
                 serializer = FoodSerializer(data=data)
@@ -494,7 +496,7 @@ def addFood(request):
             })
             
     else:
-        if Food.objects.filter(scheduled=scheduled, date=date).exists() is True:
+        if Food.objects.filter(scheduled=scheduled, date=date, incharge=incharge).exists() is True:
             return Response({
                 'data' : {},
                 'status' : False,

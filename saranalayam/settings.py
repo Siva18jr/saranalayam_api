@@ -28,7 +28,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     'rest_framework',
     'rest_framework_simplejwt',
-    "api.apps.ApiConfig"
+    "api.apps.ApiConfig",
+    "web.apps.WebConfig"
 ]
 
 MIDDLEWARE = [
@@ -46,7 +47,9 @@ ROOT_URLCONF = "saranalayam.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [
+            os.path.join(BASE_DIR, 'templates')
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
