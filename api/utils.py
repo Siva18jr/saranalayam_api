@@ -700,12 +700,14 @@ def getProjectInfo(request):
         if data['projectName'] not in projectSents else projectSents[data['projectName']] + int(0 if data['spentAmount'] == '' else data['spentAmount']))
 
     for data in serializer.data:
+        if data['name'] not in projectSents:
+            projectSents[data['name']] = 0
         projectImages[data['name']] = data['image']
 
-    projectDetails = [{'name': key, 'sents' :projectSents[key],  'image' : projectImages[key]} for key in projectSents.keys()]
+    projectDetails = [{'name': key, 'sents' : projectSents[key], 'image' : projectImages[key]} for key in projectSents.keys()]
 
     return Response({
-        'status' : False,
+        'status' : True,
         'data' : { 
             'project_count' : len(serializer.data),
             'total_sent' : totalSents,
