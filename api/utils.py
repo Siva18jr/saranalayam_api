@@ -231,13 +231,13 @@ def addActivity(request):
         return Response({
             'status' : True,
             'data' : serializer.data,
-            'message' : 'New Project Created'
+            'message' : 'New Activity added'
         })
     else:
         return Response({
             'status' : False,
             'data' : serializer.data,
-            'message' : 'Project not created'
+            'message' : 'Activity not added'
         })
     
 
@@ -479,6 +479,7 @@ def addFood(request):
                     'preparation' : request.data['preparation'],
                     'amount' : request.data['amount'],
                     'status' : request.data['status'],
+                    'paymentMethod' : request.data['paymentMethod'],
                     'scheduled' : i,
                     'date' : request.data['date'],
                     'incharge' : request.data['incharge']
@@ -721,14 +722,23 @@ def getProjectIncharge(request):
 
     username = request.query_params.get('username')
 
-    projects = Projects.objects.get(coordinatorName = username)
-    serializer = ProjectSerializer(projects, many=False)
+    if Projects.objects.filter(coordinatorName=username).exists():
 
-    return Response({
-        'status' : True,
-        'data' : serializer.data,
-        'message' : 'Project Details Retrieved'
-    })
+        projects = Projects.objects.get(coordinatorName = username)
+        serializer = ProjectSerializer(projects, many=False)
+
+        return Response({
+            'status' : True,
+            'data' : serializer.data,
+            'message' : 'Project Details Retrieved'
+        })
+
+    else:
+        return Response({
+            'status' : True,
+            'data' : {},
+            'message' : 'Project Details Retrieved'
+        })
 
 
 def getProjectAmountEntries(request):
@@ -1068,21 +1078,23 @@ def getProjectGraph(request):
         })
     
 
-def generate_pdf(data, totals):
+def generate_pdf(data, totals, project):
+
+    fileName = f"amounts_{datetime.now().strftime("%d-%m-%Y")}.pdf"
 
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="amounts.pdf"'
+    response['Content-Disposition'] =  f'attachment; filename={fileName}'
     
     buffer = SimpleDocTemplate(response, pagesize=letter)
    
     elements = []
-    elements.append(Table([["PROJECT TITLE:", "Open Shelter"]], colWidths=[200, 200]))
+    elements.append(Table([["PROJECT TITLE:", project]], colWidths=[200, 200]))
     elements.append(
         Table([[
-        "Total Amount", f"{totals['received']:.2f}",
-        "Spent Amount", f"{totals['spent']:.2f}",
-        "Balance Amount", f"{totals['remaining']:.2f}",
-        "Reimbursement Amount", f"{totals['reimbursement']:.2f}"
+            "Total Amount", f"{totals['received']:.2f}",
+            "Spent Amount", f"{totals['spent']:.2f}",
+            "Balance Amount", f"{totals['remaining']:.2f}",
+            "Reimbursement Amount", f"{totals['reimbursement']:.2f}"
         ]])
     )
 
@@ -1106,13 +1118,13 @@ def generate_pdf(data, totals):
     return response
 
 
-def generate_excel(data, totals):
+def generate_excel(data, totals, project):
 
     workbook = Workbook()
     sheet = workbook.active
 
     sheet['B1'] = 'PROJECT TITLE:'
-    sheet['D1'] = 'Open Shelter'
+    sheet['D1'] = project
     sheet.merge_cells('B1:C1')
     sheet.merge_cells('D1:E1')
 
@@ -1142,8 +1154,10 @@ def generate_excel(data, totals):
         max_length = max(len(str(cell.value)) for cell in column if cell.value) + 2
         sheet.column_dimensions[get_column_letter(column[0].column)].width = max_length
 
+    fileName = f"amounts{datetime.now().strftime("%d-%m-%Y")}.xlsx"
+
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=amounts.xlsx'
+    response['Content-Disposition'] = f'attachment; filename={fileName}'
     workbook.save(response)
 
     return response

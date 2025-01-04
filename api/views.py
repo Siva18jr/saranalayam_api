@@ -205,7 +205,21 @@ def food(request, pk):
         return updateFood(request, pk)
     
 
-def downloadAmountData(request, time_period, format_type):
+@api_view(['GET'])
+def getProjectByName(request):
+    
+    if request.method == 'GET':
+        return getProjectByProjectName(request)
+    
+
+@api_view(['PUT'])
+def project(request, pk):
+
+    if request.method == 'PUT':
+        return updateProject(request, pk)
+    
+
+def downloadAmountDataByProject(request, time_period, format_type, project):
    
     if time_period not in ['last_week', 'last_month', 'last_six_months','all']:
         return HttpResponse("Invalid time period", status=400)
@@ -222,9 +236,9 @@ def downloadAmountData(request, time_period, format_type):
         start_date = datetime.min  
     
     if time_period == 'all':
-        data = Amount.objects.all()
+        data = Amount.objects.filter(projectName=project)
     else:
-        data = Amount.objects.filter(created__gte=start_date)
+        data = Amount.objects.filter(created__gte=start_date, projectName=project)
     
     totals = {
         'received': sum(float(amt.receivedAmount or 0.0) for amt in data),
@@ -235,22 +249,8 @@ def downloadAmountData(request, time_period, format_type):
     totals['remaining'] = totals['received'] - totals['spent']
     
     if format_type == 'pdf':
-        return generate_pdf(data, totals)
+        return generate_pdf(data, totals, project)
     elif format_type == 'excel':
-        return generate_excel(data, totals)
+        return generate_excel(data, totals, project)
     else:
         return HttpResponse("Invalid format type", status=400)
-    
-
-@api_view(['GET'])
-def getProjectByName(request):
-    
-    if request.method == 'GET':
-        return getProjectByProjectName(request)
-    
-
-@api_view(['PUT'])
-def project(request, pk):
-
-    if request.method == 'PUT':
-        return updateProject(request, pk)

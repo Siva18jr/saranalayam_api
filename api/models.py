@@ -105,6 +105,7 @@ class Food(models.Model):
     status = models.BooleanField(default=True, null=False)
     scheduled = models.CharField(max_length=50, null=False, blank=False)
     date = models.CharField(max_length=20, null=True, blank=False)
+    paymentMethod = models.CharField(max_length=50, null=True)
     updated = models.DateTimeField(auto_now=True, blank=True)
     created = models.DateTimeField(auto_now_add=True, blank=True)
 
